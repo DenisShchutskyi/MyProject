@@ -35,18 +35,18 @@ class MyImage(object):
 
 
 class MyParseHTMLs(object):
-    default_width: int = 50
-    default_height: int = 50
-    count_thread: int = 2
-    list_path_to_page: list = []
-    current_value: int = 0
+    default_width: int = 50  # ширина по умолчанию
+    default_height: int = 50  # высота по умолчанию
+    count_thread: int = 2  # количество потоков по умолчанию
+    list_path_to_page: list = []  #
+    current_value: int = 0  #
 
     def __init__(self,
-                 list_path=None,
-                 count_thread=2):
+                 list_path=None,  #
+                 count_thread=2):  #
         self.list_path_to_page = [
             {'file': l,
-             'is_parse': False} for l in list_path]
+             'is_parse': False} for l in list_path]  #
         try:
             self.count_thread = int(count_thread)
         except ValueError:
@@ -55,40 +55,39 @@ class MyParseHTMLs(object):
     def run(self):
         print('__START__')
         loop = asyncio.get_event_loop()
-        for _ in range(self.count_thread):
-            loop.run_until_complete(self.__parse_page())
+        for _ in range(self.count_thread):  # создание указанного количества потоков
+            loop.run_until_complete(self.__parse_page())  # инициализация
         loop.close()
-
         print("__END__")
 
     async def __parse_page(self):
         while self.current_value < len(self.list_path_to_page):
-            if self.list_path_to_page[self.current_value]['is_parse']:
+            if self.list_path_to_page[self.current_value]['is_parse']:  # проверка что данный файл обрабатывался
                 self.current_value += 1
             else:
-                self.list_path_to_page[self.current_value]['is_parse'] = True
-                path_to_page = self.list_path_to_page[self.current_value]['file']
-                is_update_file = False
+                self.list_path_to_page[self.current_value]['is_parse'] = True  # # отметить что файл обработан
+                path_to_page = self.list_path_to_page[self.current_value]['file']  # получение файла
+                is_update_file = False  # были ли изменения в файле
                 dirs = path_to_page.split('\\')
                 # name_file = dirs[-1]
                 path_to_dirs = '\\'.join(dirs[:-1])
-                soup = BeautifulSoup(open(path_to_page), 'html.parser')
-                for i, val in enumerate(soup.find_all('img')):
+                soup = BeautifulSoup(open(path_to_page), 'html.parser')  # загрузка файла в обработчик
+                for i, val in enumerate(soup.find_all('img')):  # получение всех ткгов img с страницы
                     name_img = val['src']
                     img = None
                     try:
-                        val['width']
-                    except KeyError:
-                        img = MyImage(path_to_dirs + '\\' + name_img)
-                        if img.img:
-                            val['width'] = img.width
+                        val['width']  # проверка наличия атрибута  width
+                    except KeyError:  # при отсутствии атрибута
+                        img = MyImage(path_to_dirs + '\\' + name_img)  # получение изображения
+                        if img.img:  # удалось получить файл
+                            val['width'] = img.width  # запись
                         else:
-                            val['width'] = self.default_width
-                        is_update_file = True
+                            val['width'] = self.default_width  #
+                        is_update_file = True  # файл был изменен
                     try:
-                        val['height']
-                    except KeyError:
-                        if img:
+                        val['height']  # проверка наличия атрибута height
+                    except KeyError:  # при отсутствии атрибута
+                        if img:  # было ли ранее инициализироано изобрадение
                             pass
                         else:
                             img = MyImage(path_to_dirs + '\\' + name_img)
@@ -96,9 +95,9 @@ class MyParseHTMLs(object):
                             val['height'] = img.height
                         else:
                             val['height'] = self.default_height
-                        is_update_file = True
+                        is_update_file = True  #
                         # print(i)
-                if is_update_file:
+                if is_update_file:  # в случае изменения файла перезаписать его
                     text = str(soup.prettify())
                     # print(text)
                     with open(path_to_page, 'w') as f:

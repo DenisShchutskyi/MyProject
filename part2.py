@@ -40,31 +40,31 @@ class MyImage(object):
 
 class MyClass(object):
     format_response: str = '<img src="{}" width="{}" height="{}" />'
-    files_list: list = []
-    count_thread: int = 2
-    current_value: int = 0
+    files_list: list = []  # список файлов
+    count_thread: int = 2  # количество потоков по умолчанию
+    current_value: int = 0  # стартовое значение
 
     def __init__(self,
                  list_files=None,
                  count_thread=2):
-        if list_files:
+        if list_files:  # если список есть
             self.files_list = [{
                 'file': MyImage(lf),
                 'is_view': False
-            } for lf in list_files]
+            } for lf in list_files]  # предобработка изображений чтоб знать какие файлы обработали
         try:
-            self.count_thread = int(count_thread)
+            self.count_thread = int(count_thread)  # проверка валидности количества потоков
         except ValueError:
             pass
 
     async def __work_function(self):
-        while self.current_value < len(self.files_list):
-            if self.files_list[self.current_value]['is_view']:
+        while self.current_value < len(self.files_list):  # проход по списку файлов
+            if self.files_list[self.current_value]['is_view']:  # проверка выводился ли данный файл
                 self.current_value += 1
             else:
-                self.files_list[self.current_value]['is_view'] = True
-                if self.files_list[self.current_value]['file'].img:
-                    tmp = self.files_list[self.current_value]['file'].get_data_img()
+                self.files_list[self.current_value]['is_view'] = True  # отметить что файл обработан
+                if self.files_list[self.current_value]['file'].img:  # проверка что вышло считать файл
+                    tmp = self.files_list[self.current_value]['file'].get_data_img()  # получение данных изображения
                     print(self.format_response.format(tmp['name_file'],
                                                       tmp['width'],
                                                       tmp['height']))
@@ -72,8 +72,8 @@ class MyClass(object):
     def run(self):
         print('__START__')
         loop = asyncio.get_event_loop()
-        for _ in range(self.count_thread):
-            loop.run_until_complete(self.__work_function())
+        for _ in range(self.count_thread):  # создание указанное количества "потоков"
+            loop.run_until_complete(self.__work_function())  # инициализация потока для функции
         loop.close()
         print("__END__")
 
